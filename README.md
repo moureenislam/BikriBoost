@@ -58,6 +58,8 @@ dotnet user-secrets set "ConnectionStrings:Default" "Server=localhost;Port=3306;
 | 5 | Strict state-machine order lifecycle | `OrderLifecycleService` | `OrdersController` (Confirm, Dispatch, …) | `OrderLifecycleTests` |
 | 4 | MFS payment & TrxID verification | `PaymentVerificationService` | `PaymentsController` | `PaymentVerificationTests` |
 
+How each one works, a demo script and known limitations: `docs/Viva_Notes_Features_2_5_4.md`.
+
 ## Running the tests
 
 ```
