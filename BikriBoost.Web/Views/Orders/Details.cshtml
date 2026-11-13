@@ -49,6 +49,24 @@
                 <dt class="col-7 text-end fw-normal">Cash to collect at the door</dt><dd class="col-5 text-end mb-0">Tk @o.CodAmount.ToString("N0")</dd>
             </dl>
         </div>
+
+        <div class="card card-body mb-3">
+            <h2 class="h6">Timeline</h2>
+            <ul class="timeline">
+                @foreach (var h in Model.History)
+                {
+                    <li>
+                        <span class="fw-semibold">@(h.FromStatus is null ? "" : h.FromStatus + " → ")@h.ToStatus</span>
+                        <span class="text-muted small">· @h.ChangedAt.AddHours(6).ToString("d MMM yyyy, h:mm tt") · @(h.ChangedByUser?.FullName ?? "system")</span>
+                        @if (h.Note is not null) { <div class="small">@h.Note</div> }
+                    </li>
+                }
+            </ul>
+            @if (o.Shipment is { } s)
+            {
+                <div class="small text-muted mt-2">Courier: @Model.CourierName · consignment <code>@s.ConsignmentId</code> · agreed charge Tk @s.DeliveryCharge.ToString("N0") · COD Tk @s.CodAmount.ToString("N0")</div>
+            }
+        </div>
     </div>
 
     <!-- Right column: what can happen next -->
@@ -56,6 +74,52 @@
         <div class="rule-box">
             <strong>Feature 2:</strong> this order was created from a pasted chat message. The parser filled the name, phone,
             district and items; a person checked the draft before it was saved as <strong>Pending</strong>.
+        </div>
+        <div class="card card-body mb-3">
+            <h2 class="h6">Next step <span class="text-muted fw-normal small">(Feature 5)</span></h2>
+            <div class="rule-box small mb-2"><strong>Rule:</strong> only allowed moves; Delivered and Returned are owner-only; Settled comes only from the courier settlement.</div>
+            @if (Model.NextSteps.Count == 0)
+            {
+                <p class="small text-muted mb-0">No further moves@(o.Status == OrderStatus.Delivered ? " — waiting for the courier settlement." : ".")</p>
+            }
+            @foreach (var step in Model.NextSteps)
+            {
+                switch (step)
+                {
+                    case OrderStatus.Confirmed:
+                        <form asp-action="Confirm" asp-route-id="@o.Id" method="post" class="mb-2">
+                            <button class="btn btn-primary btn-sm">Confirm & reserve stock</button>
+                        </form>
+                        break;
+                    case OrderStatus.Dispatched:
+                        <form asp-action="Dispatch" asp-route-id="@o.Id" method="post" class="border rounded p-2 mb-2">
+                            <div class="row g-2">
+                                <div class="col-6"><select name="courierId" asp-items="Model.Couriers" class="form-select form-select-sm"></select></div>
+                                <div class="col-6"><input name="consignmentId" class="form-control form-control-sm" placeholder="Consignment ID" /></div>
+                                <div class="col-6"><input name="deliveryCharge" type="number" min="0" step="1" value="@o.DeliveryCharge.ToString("0")" class="form-control form-control-sm" title="Agreed courier charge" /></div>
+                                <div class="col-6"><button class="btn btn-primary btn-sm w-100">Dispatch</button></div>
+                            </div>
+                        </form>
+                        break;
+                    case OrderStatus.Delivered:
+                        <form asp-action="MarkDelivered" asp-route-id="@o.Id" method="post" class="mb-2">
+                            <button class="btn btn-success btn-sm">Mark delivered</button>
+                        </form>
+                        break;
+                    case OrderStatus.Returned:
+                        <form asp-action="MarkReturned" asp-route-id="@o.Id" method="post" class="input-group input-group-sm mb-2">
+                            <input name="note" class="form-control" placeholder="Why (e.g. refused at door)" />
+                            <button class="btn btn-outline-warning">Mark returned</button>
+                        </form>
+                        break;
+                    case OrderStatus.Cancelled:
+                        <form asp-action="Cancel" asp-route-id="@o.Id" method="post" class="input-group input-group-sm mb-2">
+                            <input name="note" class="form-control" placeholder="Reason (optional)" />
+                            <button class="btn btn-outline-danger">Cancel order</button>
+                        </form>
+                        break;
+                }
+            }
         </div>
     </div>
 </div>

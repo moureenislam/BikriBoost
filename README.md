@@ -55,6 +55,7 @@ dotnet user-secrets set "ConnectionStrings:Default" "Server=localhost;Port=3306;
 | # | Feature | Service (rules) | Controller | Tests |
 |---|---|---|---|---|
 | 2 | In-chat order parsing & quick draft | `OrderTextParser`, `OrderService` | `OrdersController` (Capture, Create) | `OrderTextParserTests` |
+| 5 | Strict state-machine order lifecycle | `OrderLifecycleService` | `OrdersController` (Confirm, Dispatch, …) | `OrderLifecycleTests` |
 
 ## Running the tests
 

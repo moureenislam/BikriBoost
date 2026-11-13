@@ -12,11 +12,13 @@ namespace BikriBoost.Web.Controllers;
 
 /// <summary>
 /// Feature 2 (Capture → Draft → Create)
+/// and Feature 5 (Confirm, Dispatch, Delivered, Returned, Cancel)
 /// for orders. The rules live in the Model-layer services; this class only routes.
 /// </summary>
 public class OrdersController(
     AppDbContext db,
     OrderTextParser parser,
+    OrderLifecycleService lifecycle,
     OrderService orders) : AppController
 {
     public async Task<IActionResult> Index(OrderStatus? status)
@@ -37,6 +39,8 @@ public class OrdersController(
         var order = await db.Orders
             .Include(o => o.Items).ThenInclude(i => i.ProductVariant!).ThenInclude(v => v.Product)
             .Include(o => o.District).Include(o => o.Thana)
+            .Include(o => o.StatusHistory).ThenInclude(h => h.ChangedByUser)
+            .Include(o => o.Shipment!).ThenInclude(s => s.Courier)
             .FirstOrDefaultAsync(o => o.Id == id);
         if (order is null) return NotFound();
 
@@ -46,6 +50,10 @@ public class OrdersController(
             DistrictName = order.District!.NameEn,
             ThanaName = order.Thana?.NameEn,
             Items = order.Items.Select(i => (i, $"{i.ProductVariant!.Product!.Name} ({OrderTextParser.VariantLabel(i.ProductVariant)}) · {i.ProductVariant.Sku}")).ToList(),
+            History = order.StatusHistory.OrderBy(h => h.ChangedAt).ThenBy(h => h.Id).ToList(),
+            NextSteps = OrderLifecycleService.NextStepsFor(order.Status, IsOwner).ToList(),
+            Couriers = new SelectList(await db.Couriers.Where(c => c.IsActive).OrderBy(c => c.Name).ToListAsync(), "Id", "Name"),
+            CourierName = order.Shipment?.Courier?.Name,
         };
         return View(vm);
     }
@@ -126,5 +134,44 @@ public class OrdersController(
                 $"{v.Product!.Name} {OrderTextParser.VariantLabel(v)} · {v.Sku} · Tk {v.Price:N0} · {v.Available} available",
                 v.Id.ToString())).ToList(),
         };
+    }
+
+    // ── Feature 5 · lifecycle moves ──────────────────────────────────────────
+
+    [HttpPost, Authorize(Roles = $"{Owner},{Moderator}"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> Confirm(int id)
+    {
+        await TryRunAsync(() => lifecycle.ConfirmAsync(id, UserId), "Order confirmed and stock reserved.");
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost, Authorize(Roles = $"{Owner},{Moderator}"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(int id, string? note)
+    {
+        await TryRunAsync(() => lifecycle.CancelAsync(id, UserId, note), "Order cancelled; any reserved stock was released.");
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost, Authorize(Roles = $"{Owner},{Moderator},{WarehouseClerk}"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> Dispatch(int id, int courierId, string consignmentId, decimal deliveryCharge)
+    {
+        await TryRunAsync(() => lifecycle.DispatchAsync(id, courierId, consignmentId, deliveryCharge, UserId),
+            "Order dispatched; stock left the warehouse.");
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // Owner-only is a business rule, so the service enforces it; the role check here is a second guard.
+    [HttpPost, Authorize(Roles = $"{Owner},{Moderator},{WarehouseClerk}"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarkDelivered(int id)
+    {
+        await TryRunAsync(() => lifecycle.MarkDeliveredAsync(id, UserId, IsOwner), "Order marked Delivered.");
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost, Authorize(Roles = $"{Owner},{Moderator},{WarehouseClerk}"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarkReturned(int id, string? note)
+    {
+        await TryRunAsync(() => lifecycle.MarkReturnedAsync(id, UserId, IsOwner, note), "Order marked Returned.");
+        return RedirectToAction(nameof(Details), new { id });
     }
 }

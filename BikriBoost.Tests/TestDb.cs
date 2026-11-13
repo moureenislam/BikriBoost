@@ -69,12 +69,14 @@ public sealed class Services
     public AppDbContext Db { get; }
     public OrderService Orders { get; }
     public OrderTextParser Parser { get; }
+    public OrderLifecycleService Lifecycle { get; }
 
     public Services(TestDb t)
     {
         Db = t.NewContext();
         Orders = new OrderService(Db, t.Merchant);
         Parser = new OrderTextParser(Db, new DistrictDetector(Db));
+        Lifecycle = new OrderLifecycleService(Db);
     }
 
     public async Task<int> VariantId(string sku) => (await Db.ProductVariants.FirstAsync(v => v.Sku == sku)).Id;

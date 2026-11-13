@@ -30,6 +30,10 @@
     }
 </div>
 
+<div class="rule-box">
+    <strong>Feature 5 rule:</strong> Pending → Confirmed → Dispatched → Delivered → Settled, or Cancelled / Returned.
+    Only these moves are allowed. Confirm reserves stock, Cancel releases it, and only the courier settlement (Feature 9) can set Settled.
+</div>
 
 <ul class="nav nav-pills mb-3 flex-wrap">
     <li class="nav-item"><a class="nav-link @(Model.Status is null ? "active" : "")" asp-action="Index">All (@Model.Counts.Values.Sum())</a></li>

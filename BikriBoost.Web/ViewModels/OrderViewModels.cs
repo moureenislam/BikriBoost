@@ -35,4 +35,8 @@ public class OrderDetailsViewModel
     public string DistrictName { get; set; } = "";
     public string? ThanaName { get; set; }
     public List<(OrderItem Item, string Name)> Items { get; set; } = [];
+    public List<OrderStatusHistory> History { get; set; } = [];
+    public List<OrderStatus> NextSteps { get; set; } = [];
+    public SelectList Couriers { get; set; } = null!;
+    public string? CourierName { get; set; }
 }
