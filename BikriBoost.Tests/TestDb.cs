@@ -70,6 +70,7 @@ public sealed class Services
     public OrderService Orders { get; }
     public OrderTextParser Parser { get; }
     public OrderLifecycleService Lifecycle { get; }
+    public PaymentVerificationService Payments { get; }
 
     public Services(TestDb t)
     {
@@ -77,6 +78,7 @@ public sealed class Services
         Orders = new OrderService(Db, t.Merchant);
         Parser = new OrderTextParser(Db, new DistrictDetector(Db));
         Lifecycle = new OrderLifecycleService(Db);
+        Payments = new PaymentVerificationService(Db);
     }
 
     public async Task<int> VariantId(string sku) => (await Db.ProductVariants.FirstAsync(v => v.Sku == sku)).Id;

@@ -54,6 +54,9 @@
                     {
                         <a class="side-link @Active("Orders", "Capture")" asp-controller="Orders" asp-action="Capture">@Icon("chat") New order from chat</a>
                     }
+
+                    <div class="side-label">Money</div>
+                    <a class="side-link @Active("Payments")" asp-controller="Payments" asp-action="Review">@Icon("wallet") Payments</a>
                 </nav>
 
                 <div class="side-user">

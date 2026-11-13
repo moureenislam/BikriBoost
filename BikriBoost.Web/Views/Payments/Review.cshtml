@@ -1,0 +1,66 @@
+@model PaymentReviewViewModel
+@{ ViewData["Title"] = "Payments"; }
+
+<h1 class="h4">Advance payments (bKash / Nagad)</h1>
+
+<div class="rule-box">
+    <strong>Feature 4 rule:</strong> a transaction ID can be used only once on the whole platform (a unique database index on provider + TrxID).
+    bKash IDs are 10 letters/digits and Nagad IDs 8–12. The amount must equal the advance due exactly. Only the owner, who receives the money,
+    confirms or rejects. A confirmed advance unlocks the order for dispatch.
+</div>
+
+<h2 class="h6">Waiting for the owner (@Model.Pending.Count)</h2>
+@if (Model.Pending.Count == 0)
+{
+    <p class="text-muted">Nothing waiting.</p>
+}
+else
+{
+    <table class="table bg-white">
+        <thead><tr><th>Order</th><th>Provider</th><th>TrxID</th><th class="text-end">Amount</th><th>Sender</th><th>Submitted</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var p in Model.Pending)
+            {
+                <tr>
+                    <td><a asp-controller="Orders" asp-action="Details" asp-route-id="@p.OrderId">@p.Order!.OrderNumber</a></td>
+                    <td>@p.Provider</td>
+                    <td><code>@p.TrxId</code></td>
+                    <td class="text-end">Tk @p.Amount.ToString("N2")</td>
+                    <td>@p.SenderPhone</td>
+                    <td class="small text-muted">@p.CreatedAt.AddHours(6).ToString("d MMM, h:mm tt")</td>
+                    <td>
+                        @if (Model.IsOwner)
+                        {
+                            <div class="d-flex gap-1">
+                                <form asp-action="Confirm" asp-route-id="@p.Id" method="post"><button class="btn btn-sm btn-success">Money arrived</button></form>
+                                <form asp-action="Reject" asp-route-id="@p.Id" method="post" class="input-group input-group-sm">
+                                    <input name="reason" class="form-control" placeholder="Reason" required />
+                                    <button class="btn btn-outline-danger">Reject</button>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="small text-muted">Owner confirms</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h2 class="h6 mt-4">Recently reviewed</h2>
+<table class="table table-sm bg-white">
+    <thead><tr><th>Order</th><th>Provider</th><th>TrxID</th><th class="text-end">Amount</th><th>Result</th></tr></thead>
+    <tbody>
+        @foreach (var p in Model.Recent)
+        {
+            <tr>
+                <td><a asp-controller="Orders" asp-action="Details" asp-route-id="@p.OrderId">@p.Order!.OrderNumber</a></td>
+                <td>@p.Provider</td><td><code>@p.TrxId</code></td><td class="text-end">Tk @p.Amount.ToString("N2")</td>
+                <td>@p.Status @(p.RejectReason is null ? "" : $"– {p.RejectReason}")</td>
+            </tr>
+        }
+    </tbody>
+</table>

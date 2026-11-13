@@ -56,6 +56,7 @@ dotnet user-secrets set "ConnectionStrings:Default" "Server=localhost;Port=3306;
 |---|---|---|---|---|
 | 2 | In-chat order parsing & quick draft | `OrderTextParser`, `OrderService` | `OrdersController` (Capture, Create) | `OrderTextParserTests` |
 | 5 | Strict state-machine order lifecycle | `OrderLifecycleService` | `OrdersController` (Confirm, Dispatch, …) | `OrderLifecycleTests` |
+| 4 | MFS payment & TrxID verification | `PaymentVerificationService` | `PaymentsController` | `PaymentVerificationTests` |
 
 ## Running the tests
 

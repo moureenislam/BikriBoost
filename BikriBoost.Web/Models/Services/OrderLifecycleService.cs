@@ -13,6 +13,7 @@ namespace BikriBoost.Web.Models.Services;
 ///
 /// - Only the moves in <see cref="Allowed"/> are possible; anything else is refused.
 /// - Confirm reserves stock; Cancel releases it; Dispatch takes it out of the warehouse.
+/// - Dispatch is refused while the order is locked for an advance (Feature 4).
 /// - Only the Owner marks Delivered or Returned.
 /// - Settled is never offered to a user: it is meant to come only from the courier settlement (Feature 9, a teammate's part).
 /// - Every change writes an OrderStatusHistory row, inside one database transaction.
@@ -134,6 +135,9 @@ public class OrderLifecycleService(AppDbContext db)
 
     private async Task ShipAsync(Order order, int courierId, string? rawConsignmentId, decimal deliveryCharge)
     {
+        if (order.IsLockedForAdvance)
+            throw new RuleViolationException(
+                $"Locked until the Tk {order.AdvanceDue:N0} advance is paid and confirmed by the owner (Feature 4).");
         var consignmentId = rawConsignmentId?.Trim() ?? "";
         if (consignmentId == "")
             throw new RuleViolationException("Enter the courier's consignment ID before dispatch.");

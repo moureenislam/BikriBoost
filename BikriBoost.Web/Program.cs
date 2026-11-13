@@ -38,6 +38,7 @@ builder.Services.AddScoped<DistrictDetector>();         // Feature 2
 builder.Services.AddScoped<OrderTextParser>();          // Feature 2
 builder.Services.AddScoped<OrderService>();             // Feature 2
 builder.Services.AddScoped<OrderLifecycleService>();    // Feature 5
+builder.Services.AddScoped<PaymentVerificationService>(); // Feature 4
 
 builder.Services.AddControllersWithViews();
 

@@ -39,4 +39,20 @@ public class OrderDetailsViewModel
     public List<OrderStatus> NextSteps { get; set; } = [];
     public SelectList Couriers { get; set; } = null!;
     public string? CourierName { get; set; }
+    public List<PaymentClaim> Payments { get; set; } = [];
+    public bool IsOwner { get; set; }
+
+    /// <summary>Feature 4: the shop can ask for an advance before the parcel leaves.</summary>
+    public bool CanRequestAdvance => Order.Status is OrderStatus.Pending or OrderStatus.Confirmed
+        && !Payments.Any(p => p.Status == PaymentClaimStatus.Pending);
+    public bool CanSubmitPayment => Order.AdvanceDue > 0 && !Payments.Any(p => p.Status == PaymentClaimStatus.Pending)
+        && Order.Status is OrderStatus.Pending or OrderStatus.Confirmed;
+}
+
+/// <summary>Payments/Review: TrxIDs waiting for the owner (Feature 4).</summary>
+public class PaymentReviewViewModel
+{
+    public List<PaymentClaim> Pending { get; set; } = [];
+    public List<PaymentClaim> Recent { get; set; } = [];
+    public bool IsOwner { get; set; }
 }

@@ -64,6 +64,7 @@ else
                         <td class="text-end">@o.Total.ToString("N0")</td>
                         <td>
                             <partial name="_StatusBadge" model="o.Status" />
+                            @if (o.Locked) { <span class="badge text-bg-danger">advance due</span> }
                         </td>
                         <td class="small text-muted">@o.CreatedAt.AddHours(6).ToString("d MMM, h:mm tt")</td>
                     </tr>

@@ -41,6 +41,7 @@ public class OrdersController(
             .Include(o => o.District).Include(o => o.Thana)
             .Include(o => o.StatusHistory).ThenInclude(h => h.ChangedByUser)
             .Include(o => o.Shipment!).ThenInclude(s => s.Courier)
+            .Include(o => o.PaymentClaims)
             .FirstOrDefaultAsync(o => o.Id == id);
         if (order is null) return NotFound();
 
@@ -54,6 +55,8 @@ public class OrdersController(
             NextSteps = OrderLifecycleService.NextStepsFor(order.Status, IsOwner).ToList(),
             Couriers = new SelectList(await db.Couriers.Where(c => c.IsActive).OrderBy(c => c.Name).ToListAsync(), "Id", "Name"),
             CourierName = order.Shipment?.Courier?.Name,
+            Payments = order.PaymentClaims.OrderByDescending(p => p.CreatedAt).ToList(),
+            IsOwner = IsOwner,
         };
         return View(vm);
     }

@@ -7,6 +7,7 @@
 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
     <h1 class="h4 mb-0 me-2">Order @o.OrderNumber</h1>
     <partial name="_StatusBadge" model="o.Status" />
+    @if (o.IsLockedForAdvance) { <span class="badge text-bg-danger">Locked until advance is paid</span> }
     <a asp-action="Index" class="ms-auto small">← All orders</a>
 </div>
 
@@ -119,6 +120,43 @@
                         </form>
                         break;
                 }
+            }
+        </div>
+
+        <div class="card card-body mb-3">
+            <h2 class="h6">Advance payment <span class="text-muted fw-normal small">(Feature 4)</span></h2>
+            @if (o.AdvanceRequired == 0 && Model.Payments.Count == 0)
+            {
+                <p class="small text-muted mb-2">No advance asked for. Cash on delivery: Tk @o.CodAmount.ToString("N0").</p>
+            }
+            @foreach (var p in Model.Payments)
+            {
+                <div class="small border-bottom py-1">
+                    @p.Provider <code>@p.TrxId</code> · Tk @p.Amount.ToString("N2") ·
+                    <span class="badge @(p.Status == PaymentClaimStatus.Verified ? "text-bg-success" : p.Status == PaymentClaimStatus.Rejected ? "text-bg-danger" : "text-bg-secondary")">@p.Status</span>
+                    @if (p.RejectReason is not null) { <span class="text-danger">(@p.RejectReason)</span> }
+                </div>
+            }
+            @if (Model.CanRequestAdvance && (User.IsInRole("Owner") || User.IsInRole("Moderator")))
+            {
+                <form asp-controller="Payments" asp-action="RequestAdvance" method="post" class="input-group input-group-sm mt-2">
+                    <input type="hidden" name="orderId" value="@o.Id" />
+                    <span class="input-group-text">Ask for advance Tk</span>
+                    <input name="amount" type="number" min="1" step="1" value="@(o.AdvanceRequired > 0 ? o.AdvanceRequired.ToString("0") : o.DeliveryCharge.ToString("0"))" class="form-control" />
+                    <button class="btn btn-outline-primary">@(o.AdvanceRequired > 0 ? "Change" : "Ask")</button>
+                </form>
+            }
+            @if (Model.CanSubmitPayment && (User.IsInRole("Owner") || User.IsInRole("Moderator")))
+            {
+                <div class="rule-box small mt-3 mb-2"><strong>Rule:</strong> each TrxID can be used once on the whole platform, and the amount must be exactly Tk @o.AdvanceDue.ToString("N2").</div>
+                <form asp-controller="Payments" asp-action="Submit" method="post" class="row g-2">
+                    <input type="hidden" name="orderId" value="@o.Id" />
+                    <div class="col-4"><select name="provider" class="form-select form-select-sm"><option value="Bkash">bKash</option><option value="Nagad">Nagad</option></select></div>
+                    <div class="col-8"><input name="trxId" class="form-control form-control-sm" placeholder="Transaction ID" /></div>
+                    <div class="col-5"><input name="amount" type="number" step="0.01" min="0" value="@o.AdvanceDue.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" class="form-control form-control-sm" /></div>
+                    <div class="col-7"><input name="senderPhone" class="form-control form-control-sm" placeholder="Sender's number" value="@o.ShippingPhone" /></div>
+                    <div class="col-12"><button class="btn btn-sm btn-primary">Submit TrxID for the owner to confirm</button></div>
+                </form>
             }
         </div>
     </div>
