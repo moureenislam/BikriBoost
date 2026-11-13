@@ -1,0 +1,61 @@
+@model OrderDetailsViewModel
+@{
+    var o = Model.Order;
+    ViewData["Title"] = o.OrderNumber;
+}
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <h1 class="h4 mb-0 me-2">Order @o.OrderNumber</h1>
+    <partial name="_StatusBadge" model="o.Status" />
+    <a asp-action="Index" class="ms-auto small">← All orders</a>
+</div>
+
+<div class="row g-3">
+    <!-- Left column: what the order is -->
+    <div class="col-lg-7">
+        <div class="card card-body mb-3">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="text-muted small">Customer</div>
+                    <div class="fw-semibold">@o.ShippingName</div>
+                    <div>@o.ShippingPhone</div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="text-muted small">Deliver to</div>
+                    <div>@o.ShippingAddress</div>
+                    <div>@(Model.ThanaName is null ? "" : Model.ThanaName + ", ")@Model.DistrictName</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-body mb-3">
+            <table class="table table-sm mb-2">
+                <thead><tr><th>Item</th><th class="text-end">Qty</th><th class="text-end">Price</th><th class="text-end">Line</th></tr></thead>
+                <tbody>
+                    @foreach (var (item, name) in Model.Items)
+                    {
+                        <tr><td>@name</td><td class="text-end">@item.Quantity</td><td class="text-end">@item.UnitPrice.ToString("N0")</td><td class="text-end">@item.LineTotal.ToString("N0")</td></tr>
+                    }
+                </tbody>
+            </table>
+            <dl class="row small mb-0">
+                <dt class="col-7 text-end fw-normal">Subtotal</dt><dd class="col-5 text-end mb-0">Tk @o.Subtotal.ToString("N0")</dd>
+                <dt class="col-7 text-end fw-normal">Delivery</dt><dd class="col-5 text-end mb-0">Tk @o.DeliveryCharge.ToString("N0")</dd>
+                <dt class="col-7 text-end">Total</dt><dd class="col-5 text-end mb-0 fw-semibold">Tk @o.Total.ToString("N0")</dd>
+                @if (o.AdvanceRequired > 0)
+                {
+                    <dt class="col-7 text-end fw-normal">Advance required / paid</dt><dd class="col-5 text-end mb-0">Tk @o.AdvanceRequired.ToString("N0") / @o.AdvancePaid.ToString("N0")</dd>
+                }
+                <dt class="col-7 text-end fw-normal">Cash to collect at the door</dt><dd class="col-5 text-end mb-0">Tk @o.CodAmount.ToString("N0")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Right column: what can happen next -->
+    <div class="col-lg-5">
+        <div class="rule-box">
+            <strong>Feature 2:</strong> this order was created from a pasted chat message. The parser filled the name, phone,
+            district and items; a person checked the draft before it was saved as <strong>Pending</strong>.
+        </div>
+    </div>
+</div>

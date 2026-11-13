@@ -1,0 +1,70 @@
+@model OrderListViewModel
+@{ ViewData["Title"] = "Orders"; }
+
+<div class="page-head">
+    <div>
+        <h1 class="h3">Orders</h1>
+        <p class="page-sub">Every order in your shop, from first message to settled cash.</p>
+    </div>
+    @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+    {
+        <a class="btn btn-primary" asp-action="Capture">+ New order from chat</a>
+    }
+</div>
+
+@* Quick counts per stage; each tile filters the table below. *@
+<div class="stats">
+    @foreach (var (status, label, tone) in new[]
+    {
+        (OrderStatus.Pending, "Pending", "#94a3b8"),
+        (OrderStatus.Confirmed, "Confirmed", "#3b82f6"),
+        (OrderStatus.Dispatched, "On the way", "#06b6d4"),
+        (OrderStatus.Delivered, "Delivered", "#10b981"),
+        (OrderStatus.Returned, "Returned", "#f59e0b"),
+    })
+    {
+        <a class="stat" style="--tone:@tone" asp-action="Index" asp-route-status="@status">
+            <div class="stat-label">@label</div>
+            <div class="stat-value">@Model.Counts.GetValueOrDefault(status)</div>
+        </a>
+    }
+</div>
+
+
+<ul class="nav nav-pills mb-3 flex-wrap">
+    <li class="nav-item"><a class="nav-link @(Model.Status is null ? "active" : "")" asp-action="Index">All (@Model.Counts.Values.Sum())</a></li>
+    @foreach (var s in Enum.GetValues<OrderStatus>())
+    {
+        <li class="nav-item">
+            <a class="nav-link @(Model.Status == s ? "active" : "")" asp-action="Index" asp-route-status="@s">@s (@Model.Counts.GetValueOrDefault(s))</a>
+        </li>
+    }
+</ul>
+
+@if (Model.Orders.Count == 0)
+{
+    <p class="text-muted">No orders here yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover bg-white">
+            <thead><tr><th>Order</th><th>Customer</th><th>District</th><th class="text-end">Total (Tk)</th><th>Status</th><th>Created</th></tr></thead>
+            <tbody>
+                @foreach (var o in Model.Orders)
+                {
+                    <tr>
+                        <td><a asp-action="Details" asp-route-id="@o.Id">@o.OrderNumber</a></td>
+                        <td>@o.Customer <span class="text-muted small">@PhoneNumber.Mask(o.Phone)</span></td>
+                        <td>@o.District</td>
+                        <td class="text-end">@o.Total.ToString("N0")</td>
+                        <td>
+                            <partial name="_StatusBadge" model="o.Status" />
+                        </td>
+                        <td class="small text-muted">@o.CreatedAt.AddHours(6).ToString("d MMM, h:mm tt")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

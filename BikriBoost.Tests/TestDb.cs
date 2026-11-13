@@ -63,3 +63,31 @@ public sealed class TestDb : IDisposable
     public void Dispose() => _connection.Dispose();
 }
 
+/// <summary>All Model-layer services wired to one context, the way ASP.NET's DI does it per request.</summary>
+public sealed class Services
+{
+    public AppDbContext Db { get; }
+    public OrderService Orders { get; }
+    public OrderTextParser Parser { get; }
+
+    public Services(TestDb t)
+    {
+        Db = t.NewContext();
+        Orders = new OrderService(Db, t.Merchant);
+        Parser = new OrderTextParser(Db, new DistrictDetector(Db));
+    }
+
+    public async Task<int> VariantId(string sku) => (await Db.ProductVariants.FirstAsync(v => v.Sku == sku)).Id;
+
+    /// <summary>Creates a Pending order through OrderService, exactly as the Draft page does.</summary>
+    public async Task<Order> NewOrderAsync(string phone = "01712345678", string district = "Dhaka",
+        string sku = "KURTI-RED-S", int qty = 1, string userId = TestDb.Owner1)
+    {
+        var districtId = (await Db.Districts.FirstAsync(d => d.NameEn == district)).Id;
+        return await Orders.CreateAsync(new NewOrderInput
+        {
+            Name = "Test Customer", Phone = phone, Address = "House 1, Road 2", DistrictId = districtId,
+            Items = [new NewOrderLine { ProductVariantId = await VariantId(sku), Quantity = qty }],
+        }, userId);
+    }
+}

@@ -54,3 +54,12 @@ dotnet user-secrets set "ConnectionStrings:Default" "Server=localhost;Port=3306;
 
 | # | Feature | Service (rules) | Controller | Tests |
 |---|---|---|---|---|
+| 2 | In-chat order parsing & quick draft | `OrderTextParser`, `OrderService` | `OrdersController` (Capture, Create) | `OrderTextParserTests` |
+
+## Running the tests
+
+```
+dotnet test
+```
+
+The tests use an in-memory SQLite copy of the same model, so XAMPP doesn't need to be running.

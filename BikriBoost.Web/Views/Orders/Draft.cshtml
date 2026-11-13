@@ -1,0 +1,95 @@
+@model DraftViewModel
+@{
+    ViewData["Title"] = "Check the draft";
+    bool Miss(string field) => Model.Missing.Any(m => m.StartsWith(field));
+}
+
+<h1 class="h4">Check the draft before saving</h1>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card card-body">
+            <h2 class="h6">Customer's message</h2>
+            <pre class="raw mb-2">@Model.RawText</pre>
+            @if (Model.Missing.Count > 0)
+            {
+                <div class="alert alert-warning small mb-2">
+                    <strong>Fix before saving:</strong>
+                    <ul class="mb-0">@foreach (var m in Model.Missing) { <li>@m</li> }</ul>
+                </div>
+            }
+            else if (Model.DetectedNotes.Count > 0 || Model.Form.Items.Any(i => i.ProductVariantId != null))
+            {
+                <div class="alert alert-success small mb-2">Everything needed was found. Check it and save.</div>
+            }
+            @foreach (var note in Model.DetectedNotes) { <div class="small text-muted">• @note</div> }
+            @if (Model.UnmatchedItemsText is not null)
+            {
+                <div class="small text-danger mt-1">Item text not matched to any product: "@Model.UnmatchedItemsText"</div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <form asp-action="Create" method="post" class="card card-body">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+            <input type="hidden" asp-for="Form.DraftId" />
+            <input type="hidden" name="rawText" value="@Model.RawText" />
+
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <label asp-for="Form.Name" class="form-label">Customer name</label>
+                    <input asp-for="Form.Name" class="form-control @(Miss("name") ? "missing" : "")" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Form.Phone" class="form-label">Phone</label>
+                    <input asp-for="Form.Phone" class="form-control @(Miss("phone") ? "missing" : "")" placeholder="01XXXXXXXXX" />
+                </div>
+                <div class="col-12">
+                    <label asp-for="Form.Address" class="form-label">Delivery address</label>
+                    <input asp-for="Form.Address" class="form-control @(Miss("address") ? "missing" : "")" />
+                </div>
+                <div class="col-md-5">
+                    <label asp-for="Form.DistrictId" class="form-label">District</label>
+                    <select asp-for="Form.DistrictId" asp-items="Model.Districts" class="form-select @(Miss("district") ? "missing" : "")">
+                        <option value="">— choose —</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Form.ThanaId" class="form-label">Thana (optional)</label>
+                    <select asp-for="Form.ThanaId" asp-items="Model.Thanas" class="form-select">
+                        <option value="">—</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Form.DeliveryCharge" class="form-label">Delivery (Tk)</label>
+                    <input asp-for="Form.DeliveryCharge" class="form-control" type="number" min="0" step="1" />
+                </div>
+            </div>
+
+            <h2 class="h6 mt-3">Items</h2>
+            <table class="table table-sm align-middle">
+                <thead><tr><th>Product (size/colour, SKU, price, stock)</th><th style="width:110px">Qty</th></tr></thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Form.Items.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                <select asp-for="Form.Items[i].ProductVariantId" asp-items="Model.Variants"
+                                        class="form-select form-select-sm @(i == 0 && Miss("items") || (Model.Form.Items[i].ProductVariantId == null && Model.Form.Items[i].Quantity > 1) ? "missing" : "")">
+                                    <option value="">—</option>
+                                </select>
+                            </td>
+                            <td><input asp-for="Form.Items[i].Quantity" type="number" min="0" max="100" class="form-control form-control-sm" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <p class="small text-muted">Rows with no product are ignored. The order is risk-checked (Feature 6) as soon as it is saved.</p>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save as Pending order</button>
+                <a asp-action="Capture" class="btn btn-outline-secondary">Start again</a>
+            </div>
+        </form>
+    </div>
+</div>

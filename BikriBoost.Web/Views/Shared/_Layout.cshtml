@@ -48,6 +48,12 @@
                 </a>
 
                 <nav class="side-nav">
+                    <div class="side-label">Orders</div>
+                    <a class="side-link @(controller == "Orders" && action != "Capture" ? "active" : "")" asp-controller="Orders" asp-action="Index">@Icon("orders") All orders</a>
+                    @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                    {
+                        <a class="side-link @Active("Orders", "Capture")" asp-controller="Orders" asp-action="Capture">@Icon("chat") New order from chat</a>
+                    }
                 </nav>
 
                 <div class="side-user">

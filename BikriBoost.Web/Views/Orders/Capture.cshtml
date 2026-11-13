@@ -1,0 +1,21 @@
+@{ ViewData["Title"] = "New order from chat"; }
+
+<h1 class="h4">New order from a chat message</h1>
+
+<div class="rule-box">
+    <strong>Feature 2 rule:</strong> the message is read with fixed rules, not AI. A phone must be 01[3-9] + 8 digits
+    (+88, spaces and Bangla digits are fine). District and thana are looked up in English and Bangla, and items are matched to
+    this shop's SKUs and product names. Anything missing or unclear is highlighted for you to fix. It is never guessed.
+</div>
+
+<form asp-action="Capture" method="post" class="card card-body">
+    <label for="rawText" class="form-label">Paste the customer's Messenger / WhatsApp message</label>
+    <textarea id="rawText" name="rawText" class="form-control mb-3" rows="6"
+              placeholder="e.g. Assalamualaikum apu, ami Lamia, 01799887766, Mohammadpur Town Hall. black abaya 1 ta ar 2 ta kids frock"></textarea>
+    <div class="d-flex gap-2 flex-wrap">
+        <button type="submit" class="btn btn-primary">Read the message</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('rawText').value='Name: Sharmin Akter\nPhone: 01712-345678\nAddress: House 12, Road 5, Mirpur 10, Dhaka\nItem: Red kurti x2, size M'">Example: labelled</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('rawText').value='ami Rumana, ০১৬৭৩৩২২১১০, Agrabad, Chattogram. black abaya 2 ta nibo'">Example: free text + Bangla digits</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('rawText').value='Hi Sharmin, 01325678902, Mirpur 10. red kurti 2 ta'">Example: size missing</button>
+    </div>
+</form>

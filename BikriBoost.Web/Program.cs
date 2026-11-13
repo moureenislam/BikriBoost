@@ -34,6 +34,9 @@ builder.Services.ConfigureApplicationCookie(o =>
 });
 
 // ── Model-layer services (business rules) ──
+builder.Services.AddScoped<DistrictDetector>();         // Feature 2
+builder.Services.AddScoped<OrderTextParser>();          // Feature 2
+builder.Services.AddScoped<OrderService>();             // Feature 2
 
 builder.Services.AddControllersWithViews();
 
