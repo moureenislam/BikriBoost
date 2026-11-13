@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="BikriBoost.Tests/BikriBoost.Tests.csproj" />
+  <Project Path="BikriBoost.Web/BikriBoost.Web.csproj" />
+</Solution>

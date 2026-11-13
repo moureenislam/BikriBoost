@@ -1,0 +1,75 @@
+@model LoginViewModel
+@{ ViewData["Title"] = "Sign in"; }
+
+<div class="auth">
+    <!-- Left: what the app is (hidden on phones) -->
+    <section class="auth-hero">
+        <a class="brand" asp-controller="Home" asp-action="Index">
+            <span class="brand-mark">B</span>
+            <span><span class="brand-name">BikriBoost</span><span class="brand-sub">Seller console</span></span>
+        </a>
+
+        <div>
+            <h2 class="hero-title">Sell on Facebook.<br /><span>Keep every order in order.</span></h2>
+            <p class="hero-lead">Orders from chat, a strict order lifecycle with stock control, and verified bKash/Nagad advances for Bangladeshi f-commerce shops.</p>
+            <ul class="hero-points">
+                <li><span class="dot">01</span><span><b>Paste a chat, get an order</b>Name, phone, district and items filled in for you.</span></li>
+                <li><span class="dot">02</span><span><b>Never oversell</b>Confirming reserves stock; every status change is on the timeline.</span></li>
+                <li><span class="dot">03</span><span><b>Advances you can trust</b>Each bKash/Nagad TrxID is checked and can be used only once.</span></li>
+            </ul>
+        </div>
+
+        <div class="hero-foot">CSE470 · ASP.NET Core MVC</div>
+    </section>
+
+    <!-- Right: the form -->
+    <section class="auth-panel">
+        <div class="auth-card">
+            <h1>Welcome back</h1>
+            <p class="text-muted mb-4">Sign in to manage your shop.</p>
+
+            <form asp-action="Login" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger small py-2"></div>
+                <input type="hidden" asp-for="ReturnUrl" />
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" autocomplete="username" placeholder="you@shop.com" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" class="form-control" autocomplete="current-password" placeholder="••••••••" />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+                <div class="form-check mb-4">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <label asp-for="RememberMe" class="form-check-label">Remember me</label>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2">Sign in</button>
+            </form>
+
+            <div class="divider">Demo accounts</div>
+            <div class="demo-logins">
+                <button type="button" class="demo-login" data-email="owner@demo.bikriboost.test"><b>Owner</b><span>All features</span></button>
+                <button type="button" class="demo-login" data-email="moderator@demo.bikriboost.test"><b>Moderator</b><span>Orders &amp; chat</span></button>
+                <button type="button" class="demo-login" data-email="warehouse@demo.bikriboost.test"><b>Warehouse</b><span>Stock clerk</span></button>
+                <button type="button" class="demo-login" data-email="marketer@demo.bikriboost.test"><b>Marketer</b><span>Campaigns</span></button>
+            </div>
+            <p class="small text-muted mt-3 mb-0">Click one to fill the form. Password for all: <code>Demo@@12345</code></p>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Demo helper: fill the form with a seeded account (the user still clicks Sign in).
+        document.querySelectorAll('.demo-login').forEach(function (b) {
+            b.addEventListener('click', function () {
+                document.getElementById('Email').value = b.dataset.email;
+                document.getElementById('Password').value = 'Demo@@12345';
+                document.querySelector('.auth-card button[type=submit]').focus();
+            });
+        });
+    </script>
+}

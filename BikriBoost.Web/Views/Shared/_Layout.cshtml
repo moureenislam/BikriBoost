@@ -1,0 +1,101 @@
+﻿@{
+    // Which sidebar link is "active": compare the current controller/action with the link's.
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    string Active(string c, string? a = null) =>
+        controller == c && (a is null || action == a) ? "active" : "";
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var email = User.Identity?.Name ?? "";
+    var role = new[] { "Owner", "Moderator", "WarehouseClerk", "Marketer" }.FirstOrDefault(User.IsInRole) ?? "User";
+    var initial = email.Length > 0 ? char.ToUpperInvariant(email[0]).ToString() : "?";
+
+    // Small inline icons (no internet needed during the demo).
+    var icons = new Dictionary<string, string>
+    {
+        ["orders"] = "<path d='M3 7h18M3 12h18M3 17h12'/>",
+        ["chat"] = "<path d='M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z'/><path d='M8.5 12h.01M12 12h.01M15.5 12h.01'/>",
+        ["wallet"] = "<rect x='3' y='6' width='18' height='13' rx='2.5'/><path d='M3 10h18M16 14.5h2'/>",
+        ["logout"] = "<path d='M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4'/>",
+        ["menu"] = "<path d='M4 7h16M4 12h16M4 17h16'/>",
+    };
+    Microsoft.AspNetCore.Html.IHtmlContent Icon(string name) => Html.Raw(
+        $"<svg class='ico' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>{icons[name]}</svg>");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · BikriBoost</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="@(signedIn ? "app" : "guest")">
+@if (signedIn)
+{
+    <div class="app-shell">
+        <!-- Sidebar: a fixed column on large screens, a slide-in panel on phones (Bootstrap offcanvas-lg). -->
+        <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar">
+            <div class="sidebar-inner">
+                <a class="brand" asp-controller="Orders" asp-action="Index">
+                    <span class="brand-mark">B</span>
+                    <span>
+                        <span class="brand-name">BikriBoost</span>
+                        <span class="brand-sub">Seller console</span>
+                    </span>
+                </a>
+
+                <nav class="side-nav">
+                </nav>
+
+                <div class="side-user">
+                    <span class="avatar">@initial</span>
+                    <span class="side-user-text">
+                        <span class="side-user-name" title="@email">@email</span>
+                        <span class="side-user-role">@role</span>
+                    </span>
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        <button type="submit" class="icon-btn" title="Sign out" aria-label="Sign out">@Icon("logout")</button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <div class="app-main">
+            <header class="topbar">
+                <button class="icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-label="Open menu">@Icon("menu")</button>
+                <div class="crumb">
+                    <span class="crumb-shop">@role</span>
+                    <span class="crumb-sep">/</span>
+                    <span>@ViewData["Title"]</span>
+                </div>
+                <span class="today d-none d-sm-inline">@DateTime.UtcNow.AddHours(6).ToString("ddd, d MMM yyyy")</span>
+            </header>
+
+            <main role="main" class="content">
+                @if (TempData["Success"] is string ok)
+                {
+                    <div class="alert alert-success flash">@ok</div>
+                }
+                @if (TempData["Error"] is string err)
+                {
+                    <div class="alert alert-danger flash">@err</div>
+                }
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+}
+else
+{
+    <main role="main">
+        @RenderBody()
+    </main>
+}
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

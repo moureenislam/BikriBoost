@@ -1,0 +1,27 @@
+﻿@{ ViewData["Title"] = "Welcome"; }
+
+<div class="landing">
+    <section class="auth-hero">
+        <a class="brand mb-4" asp-controller="Home" asp-action="Index">
+            <span class="brand-mark">B</span>
+            <span class="text-start"><span class="brand-name">BikriBoost</span><span class="brand-sub">Seller console</span></span>
+        </a>
+        <h1 class="hero-title">Order and payment control<br /><span>for Facebook sellers in Bangladesh.</span></h1>
+        <p class="hero-lead">Turn chat messages into orders, move them through a strict lifecycle without overselling, and verify every advance payment.</p>
+        <div class="mt-4">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="btn btn-hero" asp-controller="Orders" asp-action="Index">Go to orders →</a>
+            }
+            else
+            {
+                <a class="btn btn-hero" asp-controller="Account" asp-action="Login">Sign in →</a>
+            }
+        </div>
+        <ul class="hero-points">
+            <li><span class="dot">01</span><span><b>Chat to order</b>Paste a Messenger or WhatsApp message and get a filled draft.</span></li>
+            <li><span class="dot">02</span><span><b>Order lifecycle</b>Pending → Confirmed → Dispatched → Delivered, with stock reserved on confirm.</span></li>
+            <li><span class="dot">03</span><span><b>Advance payments</b>bKash/Nagad TrxIDs checked for format, amount and reuse.</span></li>
+        </ul>
+    </section>
+</div>
