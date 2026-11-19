@@ -25,6 +25,7 @@ public sealed class MarketingWorker(IServiceScopeFactory scopes, ILogger<Marketi
                     await using var db = new AppDbContext(scope.ServiceProvider.GetRequiredService<DbContextOptions<AppDbContext>>(), new JobMerchant(id));
                     var clock = scope.ServiceProvider.GetRequiredService<TimeProvider>();
                     await new SchedulingService(db, new MarketingUnitOfWork(db), scope.ServiceProvider.GetRequiredService<IPublisher>(), clock).PublishDue();
+                    await new FatigueDetector(db, new MarketingUnitOfWork(db), clock).Evaluate();
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }

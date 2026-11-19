@@ -4,7 +4,8 @@
 
 BikriBoost is an e-commerce management project built with ASP.NET Core MVC,
 .NET 10, and Entity Framework Core 9. The current implementation includes
-marketing features 18–20: post approvals, scheduling, and asset and brand management.
+marketing features 18–23: post approvals, scheduling, asset and brand management,
+campaigns and coupons, ROI reporting, and creative fatigue detection.
 
 Read `README.md`, `docs/LOCAL_SETUP.md`, and `docs/FEATURE_WALKTHROUGH.md`
 before making changes. Features 2, 4, and 5 are present from the group repository; preserve their services, screens, tests, and migrations.

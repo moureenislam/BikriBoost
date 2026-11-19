@@ -6,6 +6,7 @@ using BikriBoost.Web.Jobs;
 using BikriBoost.Web.Models.Data;
 using BikriBoost.Web.Models.Entities;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -39,8 +40,10 @@ public sealed class MarketingFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.ConfigureLogging(logging => logging.ClearProviders());
         builder.ConfigureServices(services =>
         {
+            services.AddDataProtection().UseEphemeralDataProtectionProvider();
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<AppDbContext>>();
             services.AddDbContext<AppDbContext>(o => o.UseSqlite(connection));
@@ -58,6 +61,9 @@ public sealed class MarketingFactory : WebApplicationFactory<Program>
         db.Merchants.AddRange(new Merchant { Id = 1, Name = "Shop One", Slug = "one" }, new Merchant { Id = 2, Name = "Shop Two", Slug = "two" });
         db.Users.Add(new AppUser { Id = "test-user", UserName = "tester", Email = "test@test.local", MerchantId = 1 });
         db.ProductVariants.Add(new ProductVariant { Id = 1, Sku = "TEST", Stock = 5, Price = 100, CostPrice = 20, Product = new() { Name = "Test product" } });
+        db.Customers.Add(new Customer { Id = 1, Name = "Test customer", Phone = "01711000000" });
+        db.Campaigns.AddRange(new Campaign { Id = 1, Name = "Campaign one" }, new Campaign { Id = 2, MerchantId = 2, Name = "Private campaign" });
+        db.Orders.Add(new Order { Id = 1, OrderNumber = "TEST-1", CustomerId = 1, DistrictId = 1, ShippingPhone = "01711000000", Subtotal = 500, Total = 550, DeliveryCharge = 50, Items = [new() { ProductVariantId = 1, Quantity = 5, UnitCost = 20, UnitPrice = 100, LineTotal = 500 }] });
         await db.SaveChangesAsync();
     }
     public HttpClient Client(string? role = "Owner", int merchant = 1)

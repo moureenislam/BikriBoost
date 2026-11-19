@@ -2,7 +2,7 @@
 
 ## Open and test in VS Code (Windows)
 
-This project contains ASM Asif Islam's features 18–20 and the shared team baseline. Open **BikriBoost.code-workspace**
+The complete current project is saved in this folder. Open **BikriBoost.code-workspace**
 with VS Code, or use **File > Open Folder** and select this folder.
 See [LOCAL_SETUP.md](docs/LOCAL_SETUP.md) for the folder structure and troubleshooting.
 
@@ -29,10 +29,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Invoke-Project.ps1
 ## Implemented marketing features
 
 - **Section 1:** 18 — post approvals and image annotations; 19 — marketing calendar and stock checks; 20 — versioned assets and brand validation.
+- **Section 2:** 21 — campaigns, coupons and attribution; 22 — realized ROI with CSV/PDF export; 23 — creative fatigue detection.
 
 Run `./Start-Demo.ps1` from PowerShell, then open http://localhost:5071. Development uses a local SQLite demo database and sample records, so no API key or running XAMPP service is needed. The first package restore needs internet access. The script finds either an installed .NET 10 SDK or the local SDK installed for this workspace.
 
-Sign in as `owner@demo.bikriboost.test` or `marketer@demo.bikriboost.test`, using `Demo@12345`. Only Owner can approve posts and change brand settings. Publishing is explicitly simulated: nothing is sent to social media.
+Sign in as `owner@demo.bikriboost.test` or `marketer@demo.bikriboost.test`, using `Demo@12345`. Only Owner can approve posts and change brand settings. Publishing is explicitly simulated: nothing is sent to social media. Ad spending and weekly performance are entered manually; spending also supports CSV import.
 
 Run `dotnet test` to verify the features. See [the feature walkthrough](docs/FEATURE_WALKTHROUGH.md) for demo steps, calculation rules and integration points.
 

@@ -171,6 +171,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentMercha
                 : fk.IsRequired ? DeleteBehavior.Restrict : DeleteBehavior.SetNull;
         }
 
+        b.Entity<Coupon>().Property(p => p.TimesUsed).IsConcurrencyToken();
+        b.Entity<Order>().Property(p => p.CouponId).IsConcurrencyToken();
+        b.Entity<Order>().Property(p => p.Status).IsConcurrencyToken();
         b.Entity<ScheduledPost>().Property(p => p.Status).IsConcurrencyToken();
         b.Entity<Post>().Property(p => p.Status).IsConcurrencyToken();
         b.Entity<ApprovalRequest>().Property(p => p.Status).IsConcurrencyToken();
