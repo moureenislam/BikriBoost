@@ -171,6 +171,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentMercha
                 : fk.IsRequired ? DeleteBehavior.Restrict : DeleteBehavior.SetNull;
         }
 
+        b.Entity<ScheduledPost>().Property(p => p.Status).IsConcurrencyToken();
+        b.Entity<Post>().Property(p => p.Status).IsConcurrencyToken();
+        b.Entity<ApprovalRequest>().Property(p => p.Status).IsConcurrencyToken();
+
         // ── Reference data that every copy of the database needs ──
         b.Entity<IdentityRole>().HasData(ReferenceData.Roles);
         b.Entity<District>().HasData(ReferenceData.Districts);

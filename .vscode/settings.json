@@ -1,0 +1,22 @@
+{
+  "dotnet.defaultSolution": "BikriBoost.slnx",
+  "dotnetAcquisitionExtension.existingDotnetPath": [
+    {
+      "extensionId": "ms-dotnettools.csharp",
+      "path": "C:/Users/hp/AppData/Local/BikriBoost/dotnet/dotnet.exe"
+    }
+  ],
+  "terminal.integrated.env.windows": {
+    "DOTNET_ROOT": "${env:LOCALAPPDATA}\\BikriBoost\\dotnet",
+    "PATH": "${env:LOCALAPPDATA}\\BikriBoost\\dotnet;${env:PATH}"
+  },
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  },
+  "files.watcherExclude": {
+    "**/bin/**": true,
+    "**/obj/**": true,
+    "**/App_Data/**": true
+  }
+}

@@ -1,4 +1,4 @@
-﻿@{
+@{
     // Which sidebar link is "active": compare the current controller/action with the link's.
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var action = ViewContext.RouteData.Values["action"]?.ToString();
@@ -57,6 +57,13 @@
 
                     <div class="side-label">Money</div>
                     <a class="side-link @Active("Payments")" asp-controller="Payments" asp-action="Review">@Icon("wallet") Payments</a>
+                    @if (User.IsInRole("Owner") || User.IsInRole("Marketer"))
+                    {
+                        <div class="side-label">Marketing</div>
+                        <a class="side-link" asp-controller="Approvals" asp-action="Index">Post approvals</a>
+                        <a class="side-link" asp-controller="Calendar" asp-action="Index">Marketing calendar</a>
+                        <a class="side-link" asp-controller="Assets" asp-action="Index">Assets &amp; brand kit</a>
+                    }
                 </nav>
 
                 <div class="side-user">

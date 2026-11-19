@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "BikriBoost: local demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "BikriBoost: build",
+      "program": "${workspaceFolder}/BikriBoost.Web/bin/Debug/net10.0/BikriBoost.Web.exe",
+      "cwd": "${workspaceFolder}/BikriBoost.Web",
+      "args": ["--environment", "Development", "--Database:Provider=Sqlite", "--urls", "http://localhost:5071"],
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ROOT": "${env:LOCALAPPDATA}\\BikriBoost\\dotnet"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    }
+  ]
+}

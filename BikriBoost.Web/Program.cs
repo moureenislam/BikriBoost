@@ -1,20 +1,27 @@
 using BikriBoost.Web.Models.Data;
 using BikriBoost.Web.Models.Entities;
 using BikriBoost.Web.Models.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Database: MariaDB 10.4 (XAMPP) through EF Core 9 + Pomelo ──
-var cs = builder.Configuration.GetConnectionString("Default")
-    ?? throw new InvalidOperationException("Connection string 'Default' is missing.");
+// Database: MariaDB through Pomelo, or SQLite for the local demo.
+var cs = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentMerchant, HttpCurrentMerchant>();
+var localDemo = builder.Environment.IsDevelopment() && builder.Configuration["Database:Provider"] == "Sqlite";
+Directory.CreateDirectory(Path.Combine(builder.Environment.ContentRootPath, "App_Data"));
 builder.Services.AddDbContext<AppDbContext>(o =>
-    o.UseMySql(cs, new MariaDbServerVersion(new Version(10, 4, 32))));
+{
+    if (localDemo)
+        o.UseSqlite($"Data Source={Path.Combine(builder.Environment.ContentRootPath, "App_Data", "marketing-demo.db")}");
+    else
+        o.UseMySql(cs ?? throw new InvalidOperationException("Connection string Default is missing."), new MariaDbServerVersion(new Version(10, 4, 32)));
+});
 
-// ── Identity: password hashing, lockout, four roles ──
+// Identity: password hashing, lockout, and the four existing roles.
 builder.Services
     .AddIdentity<AppUser, IdentityRole>(o =>
     {
@@ -27,26 +34,39 @@ builder.Services
     .AddDefaultTokenProviders()
     .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory>();
 
-builder.Services.ConfigureApplicationCookie(o =>
+builder.Services.ConfigureApplicationCookie(o => { o.LoginPath = "/Account/Login"; o.AccessDeniedPath = "/Account/AccessDenied"; });
+builder.Services.AddScoped<DistrictDetector>();
+builder.Services.AddScoped<OrderTextParser>();
+builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<OrderLifecycleService>();
+builder.Services.AddScoped<PaymentVerificationService>();
+builder.Services.AddScoped<MarketingUnitOfWork>();
+builder.Services.AddScoped<ApprovalService>();
+builder.Services.AddScoped<AssetService>();
+builder.Services.AddSingleton<BrandComplianceChecker>();
+builder.Services.AddScoped<SchedulingService>();
+builder.Services.AddSingleton<IPublisher, SimulatedPublisher>();
+builder.Services.AddHostedService<BikriBoost.Web.Jobs.MarketingWorker>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddControllersWithViews(o =>
 {
-    o.LoginPath = "/Account/Login";
-    o.AccessDeniedPath = "/Account/AccessDenied";
+    o.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+    o.Filters.Add<MarketingErrors>();
+    o.Filters.Add<MarketingInputValidation>();
 });
-
-// ── Model-layer services (business rules) ──
-builder.Services.AddScoped<DistrictDetector>();         // Feature 2
-builder.Services.AddScoped<OrderTextParser>();          // Feature 2
-builder.Services.AddScoped<OrderService>();             // Feature 2
-builder.Services.AddScoped<OrderLifecycleService>();    // Feature 5
-builder.Services.AddScoped<PaymentVerificationService>(); // Feature 4
-
-builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    if (localDemo)
+    {
+        using var scope = app.Services.CreateScope();
+        await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreatedAsync();
+    }
     await DbSeeder.SeedAsync(app.Services);
+    if (builder.Configuration.GetValue("Demo:SeedMarketing", localDemo))
+        await MarketingDemoSeeder.Seed(app.Services, app.Environment);
 }
 else
 {
@@ -68,3 +88,7 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.Run();
+
+public partial class Program
+{
+}

@@ -1,4 +1,4 @@
-﻿@{ ViewData["Title"] = "Welcome"; }
+@{ ViewData["Title"] = "Welcome"; }
 
 <div class="landing">
     <section class="auth-hero">
@@ -25,3 +25,14 @@
         </ul>
     </section>
 </div>
+
+@if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Owner") || User.IsInRole("Marketer")))
+{
+    <section class="p-4">
+        <h2>Marketing workspace</h2>
+        <p>Review posts, schedule approved creative, and manage brand assets.</p>
+        <a class="btn btn-primary" asp-controller="Approvals" asp-action="Index">Post approvals</a>
+        <a class="btn btn-outline-primary" asp-controller="Calendar" asp-action="Index">Marketing calendar</a>
+        <a class="btn btn-outline-primary" asp-controller="Assets" asp-action="Index">Assets &amp; brand kit</a>
+    </section>
+}
